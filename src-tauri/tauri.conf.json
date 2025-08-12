@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "RocketBay",
+  "version": "0.1.0",
+  "identifier": "com.rocketbay.app",
+  "build": {
+    "frontendDist": "../.output/public",
+    "devUrl": "http://localhost:3000"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "RocketBay - Process Launcher",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false,
+    "targets": "all",
+    "resources": [],
+    "copyright": "",
+    "category": "DeveloperTool",
+    "shortDescription": "A cross-platform process launcher",
+    "longDescription": "RocketBay is a powerful cross-platform process launcher that helps you organize and manage your applications with groups and custom configurations."
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    }
+  }
+}

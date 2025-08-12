@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RocketBay - Process Launcher</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <i class="fas fa-rocket"></i>
+                <h1>RocketBay</h1>
+            </div>
+            <div class="header-right">
+                <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="settings-btn" class="icon-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <!-- Left Sidebar - Groups -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Groups</h2>
+                    <button id="add-group-btn" class="icon-btn" title="Add Group">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="groups-list" class="groups-list">
+                    <!-- Groups will be dynamically loaded here -->
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <div class="content-header">
+                    <h2 id="content-title">Launch Items</h2>
+                    <button id="add-item-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add Launch Item
+                    </button>
+                </div>
+                
+                <div id="launch-items-grid" class="launch-items-grid">
+                    <!-- Launch items will be dynamically loaded here -->
+                </div>
+
+                <!-- Empty state -->
+                <div id="empty-state" class="empty-state" style="display: none;">
+                    <i class="fas fa-rocket"></i>
+                    <h3>No Launch Items</h3>
+                    <p>Create your first launch item to get started</p>
+                    <button class="btn btn-primary" onclick="showAddItemModal()">
+                        <i class="fas fa-plus"></i>
+                        Add Launch Item
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Group Modal -->
+    <div id="group-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="group-modal-title">Add Group</h3>
+                <button class="close-btn" onclick="closeGroupModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="group-form">
+                <div class="form-group">
+                    <label for="group-name">Group Name</label>
+                    <input type="text" id="group-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="group-color">Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="group-color" value="#3b82f6">
+                        <div class="color-presets">
+                            <div class="color-preset" data-color="#3b82f6" style="background: #3b82f6;"></div>
+                            <div class="color-preset" data-color="#ef4444" style="background: #ef4444;"></div>
+                            <div class="color-preset" data-color="#10b981" style="background: #10b981;"></div>
+                            <div class="color-preset" data-color="#f59e0b" style="background: #f59e0b;"></div>
+                            <div class="color-preset" data-color="#8b5cf6" style="background: #8b5cf6;"></div>
+                            <div class="color-preset" data-color="#ec4899" style="background: #ec4899;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="group-icon">Icon</label>
+                    <div class="icon-picker">
+                        <input type="text" id="group-icon" placeholder="fas fa-folder" value="fas fa-folder">
+                        <div class="icon-presets">
+                            <div class="icon-preset" data-icon="fas fa-folder"><i class="fas fa-folder"></i></div>
+                            <div class="icon-preset" data-icon="fas fa-code"><i class="fas fa-code"></i></div>
+                            <div class="icon-preset" data-icon="fas fa-gamepad"><i class="fas fa-gamepad"></i></div>
+                            <div class="icon-preset" data-icon="fas fa-tools"><i class="fas fa-tools"></i></div>
+                            <div class="icon-preset" data-icon="fas fa-globe"><i class="fas fa-globe"></i></div>
+                            <div class="icon-preset" data-icon="fas fa-database"><i class="fas fa-database"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeGroupModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Launch Item Modal -->
+    <div id="item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="item-modal-title">Add Launch Item</h3>
+                <button class="close-btn" onclick="closeItemModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="item-form">
+                <div class="form-group">
+                    <label for="item-name">Name</label>
+                    <input type="text" id="item-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="item-path">Executable Path</label>
+                    <div class="input-with-button">
+                        <input type="text" id="item-path" required>
+                        <button type="button" class="btn btn-secondary" onclick="browseFile()">
+                            <i class="fas fa-folder-open"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="item-args">Arguments</label>
+                    <input type="text" id="item-args" placeholder="--arg1 value1 --arg2 value2">
+                </div>
+                <div class="form-group">
+                    <label for="item-working-dir">Working Directory</label>
+                    <div class="input-with-button">
+                        <input type="text" id="item-working-dir">
+                        <button type="button" class="btn btn-secondary" onclick="browseFolder()">
+                            <i class="fas fa-folder-open"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="item-group">Group</label>
+                    <select id="item-group" required>
+                        <option value="">Select a group</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="item-shortcut">Keyboard Shortcut</label>
+                    <input type="text" id="item-shortcut" placeholder="Ctrl+Alt+A">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeItemModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
