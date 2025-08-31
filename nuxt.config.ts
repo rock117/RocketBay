@@ -2,14 +2,15 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
+    '@nuxtjs/tailwindcss',
     '@vueuse/nuxt',
     '@pinia/nuxt'
   ],
   css: ['~/assets/css/main.css'],
   ssr: false,
   nitro: {
-    output: {
-      publicDir: '.output/public'
+    prerender: {
+      routes: ['/']
     }
   },
   vite: {

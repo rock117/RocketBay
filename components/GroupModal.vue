@@ -102,8 +102,8 @@ import {
   CodeBracketIcon,
   GlobeAltIcon,
   WrenchScrewdriverIcon,
-  GameController2Icon,
-  DatabaseIcon
+  CubeIcon,
+  CircleStackIcon
 } from '@heroicons/vue/24/outline'
 
 import { useGroupsStore } from '~/stores/groups'
@@ -134,8 +134,8 @@ const iconPresets = [
   { name: 'Code', value: 'fas fa-code', component: CodeBracketIcon },
   { name: 'Globe', value: 'fas fa-globe', component: GlobeAltIcon },
   { name: 'Tools', value: 'fas fa-tools', component: WrenchScrewdriverIcon },
-  { name: 'Games', value: 'fas fa-gamepad', component: GameController2Icon },
-  { name: 'Database', value: 'fas fa-database', component: DatabaseIcon }
+  { name: 'Apps', value: 'fas fa-cube', component: CubeIcon },
+  { name: 'Database', value: 'fas fa-database', component: CircleStackIcon }
 ]
 
 const formData = reactive({
@@ -143,6 +143,12 @@ const formData = reactive({
   color: '#3b82f6',
   icon: 'fas fa-folder'
 })
+
+const resetForm = () => {
+  formData.name = ''
+  formData.color = '#3b82f6'
+  formData.icon = 'fas fa-folder'
+}
 
 // Watch for editing group changes
 watch(() => uiStore.editingGroup, (group) => {
@@ -154,12 +160,6 @@ watch(() => uiStore.editingGroup, (group) => {
     resetForm()
   }
 }, { immediate: true })
-
-const resetForm = () => {
-  formData.name = ''
-  formData.color = '#3b82f6'
-  formData.icon = 'fas fa-folder'
-}
 
 const closeModal = () => {
   uiStore.setShowAddGroupModal(false)

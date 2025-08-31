@@ -45,32 +45,35 @@ pub async fn update_group(
     let storage = Storage::new(app_handle);
     let mut groups = storage.load_groups().map_err(|e| e.to_string())?;
     
-    let group = groups
-        .iter_mut()
-        .find(|g| g.id == request.id)
-        .ok_or("Group not found")?;
-    
-    if let Some(name) = request.name {
-        group.name = name;
-    }
-    if let Some(color) = request.color {
-        group.color = Some(color);
-    }
-    if let Some(icon) = request.icon {
-        group.icon = Some(icon);
-    }
-    if let Some(expanded) = request.expanded {
-        group.expanded = expanded;
-    }
-    if let Some(order) = request.order {
-        group.order = order;
-    }
-    
-    group.updated_at = chrono::Utc::now().to_rfc3339();
+    let updated_group = {
+        let group = groups
+            .iter_mut()
+            .find(|g| g.id == request.id)
+            .ok_or("Group not found")?;
+        
+        if let Some(name) = request.name {
+            group.name = name;
+        }
+        if let Some(color) = request.color {
+            group.color = Some(color);
+        }
+        if let Some(icon) = request.icon {
+            group.icon = Some(icon);
+        }
+        if let Some(expanded) = request.expanded {
+            group.expanded = expanded;
+        }
+        if let Some(order) = request.order {
+            group.order = order;
+        }
+        
+        group.updated_at = chrono::Utc::now().to_rfc3339();
+        group.clone()
+    };
     
     storage.save_groups(&groups).map_err(|e| e.to_string())?;
     
-    Ok(group.clone())
+    Ok(updated_group)
 }
 
 #[tauri::command]
@@ -134,38 +137,41 @@ pub async fn update_launch_item(
     let storage = Storage::new(app_handle);
     let mut items = storage.load_launch_items().map_err(|e| e.to_string())?;
     
-    let item = items
-        .iter_mut()
-        .find(|i| i.id == request.id)
-        .ok_or("Launch item not found")?;
-    
-    if let Some(name) = request.name {
-        item.name = name;
-    }
-    if let Some(path) = request.path {
-        item.path = path;
-    }
-    if let Some(args) = request.args {
-        item.args = args;
-    }
-    if let Some(working_dir) = request.working_dir {
-        item.working_dir = Some(working_dir);
-    }
-    if let Some(icon) = request.icon {
-        item.icon = Some(icon);
-    }
-    if let Some(shortcut) = request.shortcut {
-        item.shortcut = Some(shortcut);
-    }
-    if let Some(group_id) = request.group_id {
-        item.group_id = group_id;
-    }
-    
-    item.updated_at = chrono::Utc::now().to_rfc3339();
+    let updated_item = {
+        let item = items
+            .iter_mut()
+            .find(|i| i.id == request.id)
+            .ok_or("Launch item not found")?;
+        
+        if let Some(name) = request.name {
+            item.name = name;
+        }
+        if let Some(path) = request.path {
+            item.path = path;
+        }
+        if let Some(args) = request.args {
+            item.args = args;
+        }
+        if let Some(working_dir) = request.working_dir {
+            item.working_dir = Some(working_dir);
+        }
+        if let Some(icon) = request.icon {
+            item.icon = Some(icon);
+        }
+        if let Some(shortcut) = request.shortcut {
+            item.shortcut = Some(shortcut);
+        }
+        if let Some(group_id) = request.group_id {
+            item.group_id = group_id;
+        }
+        
+        item.updated_at = chrono::Utc::now().to_rfc3339();
+        item.clone()
+    };
     
     storage.save_launch_items(&items).map_err(|e| e.to_string())?;
     
-    Ok(item.clone())
+    Ok(updated_item)
 }
 
 #[tauri::command]
