@@ -87,3 +87,24 @@ pub struct UpdateGroupRequest {
     pub expanded: Option<bool>,
     pub order: Option<i32>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppConfig {
+    pub groups: Vec<Group>,
+    pub launch_items: Vec<LaunchItem>,
+    pub settings: AppSettings,
+    pub version: String,
+    pub last_saved: String,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            groups: vec![],
+            launch_items: vec![],
+            settings: AppSettings::default(),
+            version: "0.1.0".to_string(),
+            last_saved: chrono::Utc::now().to_rfc3339(),
+        }
+    }
+}

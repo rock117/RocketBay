@@ -7,6 +7,7 @@ export const useUIStore = defineStore('ui', {
     showEditGroupModal: false,
     showAddItemModal: false,
     showEditItemModal: false,
+    showConfigModal: false,
     editingGroup: null,
     editingItem: null,
     notifications: []
@@ -39,6 +40,10 @@ export const useUIStore = defineStore('ui', {
     setShowEditItemModal(show, item = null) {
       this.showEditItemModal = show
       this.editingItem = item
+    },
+
+    setShowConfigModal(show) {
+      this.showConfigModal = show
     },
 
     addNotification(notification) {

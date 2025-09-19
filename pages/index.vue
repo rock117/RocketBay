@@ -42,6 +42,7 @@
     <!-- Modals -->
     <GroupModal />
     <LaunchItemModal />
+    <ConfigModal />
     
     <!-- Loading Overlay -->
     <LoadingOverlay v-if="isLoading" />
@@ -53,10 +54,12 @@ import { PlusIcon, RocketLaunchIcon } from '@heroicons/vue/24/outline'
 import { useGroupsStore } from '~/stores/groups'
 import { useLaunchItemsStore } from '~/stores/launchItems'
 import { useUIStore } from '~/stores/ui'
+import { useConfigStore } from '~/stores/config'
 
 const groupsStore = useGroupsStore()
 const launchItemsStore = useLaunchItemsStore()
 const uiStore = useUIStore()
+const configStore = useConfigStore()
 
 const isLoading = computed(() => uiStore.isLoading)
 const selectedGroupName = computed(() => {
@@ -81,10 +84,16 @@ const showAddItemModal = computed({
 onMounted(async () => {
   uiStore.setLoading(true)
   try {
-    await Promise.all([
-      groupsStore.loadGroups(),
-      launchItemsStore.loadItems()
-    ])
+    // Try to load configuration first, fallback to individual stores if needed
+    try {
+      await configStore.initializeConfig()
+    } catch (error) {
+      console.warn('Config initialization failed, loading individual stores:', error)
+      await Promise.all([
+        groupsStore.loadGroups(),
+        launchItemsStore.loadItems()
+      ])
+    }
   } finally {
     uiStore.setLoading(false)
   }

@@ -14,6 +14,13 @@
         <MoonIcon v-else class="w-5 h-5" />
       </button>
       <button 
+        @click="showConfig = true" 
+        class="icon-btn" 
+        title="Configuration"
+      >
+        <DocumentArrowDownIcon class="w-5 h-5" />
+      </button>
+      <button 
         @click="showSettings = true" 
         class="icon-btn" 
         title="Settings"
@@ -25,11 +32,18 @@
 </template>
 
 <script setup>
-import { RocketLaunchIcon, SunIcon, MoonIcon, CogIcon } from '@heroicons/vue/24/outline'
+import { RocketLaunchIcon, SunIcon, MoonIcon, CogIcon, DocumentArrowDownIcon } from '@heroicons/vue/24/outline'
 import { useSettingsStore } from '~/stores/settings'
+import { useUIStore } from '~/stores/ui'
 
 const settingsStore = useSettingsStore()
+const uiStore = useUIStore()
 const showSettings = ref(false)
+
+const showConfig = computed({
+  get: () => uiStore.showConfigModal,
+  set: (value) => uiStore.setShowConfigModal(value)
+})
 
 const isDark = computed(() => settingsStore.theme === 'dark')
 </script>

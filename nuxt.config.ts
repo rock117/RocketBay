@@ -18,13 +18,15 @@ export default defineNuxtConfig({
     clearScreen: false,
     envPrefix: ['VITE_', 'TAURI_'],
     server: {
-      strictPort: true,
-      port: 3000
+      strictPort: true
     },
     build: {
       target: process.env.TAURI_PLATFORM == 'windows' ? 'chrome105' : 'safari13',
       minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
-      sourcemap: !!process.env.TAURI_DEBUG
+      sourcemap: !!process.env.TAURI_DEBUG,
+      rollupOptions: {
+        external: ['@tauri-apps/plugin-dialog']
+      }
     }
   }
 })

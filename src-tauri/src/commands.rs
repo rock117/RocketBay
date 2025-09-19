@@ -1,7 +1,8 @@
-use crate::models::*;
-use crate::storage::Storage;
-use std::process::Command;
 use tauri::{AppHandle, State};
+use crate::models::*;
+use crate::storage::*;
+use crate::config::ConfigManager;
+use std::process::Command;
 use uuid::Uuid;
 
 // Group commands
@@ -218,4 +219,53 @@ pub async fn update_settings(
     let storage = Storage::new(app_handle);
     storage.save_settings(&settings).map_err(|e| e.to_string())?;
     Ok(settings)
+}
+
+// Configuration commands
+#[tauri::command]
+pub async fn save_config(app_handle: AppHandle) -> Result<String, String> {
+    let storage = Storage::new(app_handle);
+    
+    // Load current data
+    let groups = storage.load_groups().map_err(|e| e.to_string())?;
+    let launch_items = storage.load_launch_items().map_err(|e| e.to_string())?;
+    let settings = storage.load_settings().map_err(|e| e.to_string())?;
+    
+    // Create config object
+    let config = AppConfig {
+        groups,
+        launch_items,
+        settings,
+        version: "0.1.0".to_string(),
+        last_saved: chrono::Utc::now().to_rfc3339(),
+    };
+    
+    // Save to file
+    ConfigManager::save_config(&config)?;
+    
+    // Return config file path
+    ConfigManager::get_config_path_string()
+}
+
+#[tauri::command]
+pub async fn load_config(app_handle: AppHandle) -> Result<AppConfig, String> {
+    let config = ConfigManager::load_config()?;
+    
+    // Save loaded data to storage
+    let storage = Storage::new(app_handle);
+    storage.save_groups(&config.groups).map_err(|e| e.to_string())?;
+    storage.save_launch_items(&config.launch_items).map_err(|e| e.to_string())?;
+    storage.save_settings(&config.settings).map_err(|e| e.to_string())?;
+    
+    Ok(config)
+}
+
+#[tauri::command]
+pub async fn get_config_path() -> Result<String, String> {
+    ConfigManager::get_config_path_string()
+}
+
+#[tauri::command]
+pub async fn backup_config() -> Result<(), String> {
+    ConfigManager::backup_config()
 }

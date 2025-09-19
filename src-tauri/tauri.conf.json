@@ -10,13 +10,12 @@
   "app": {
     "windows": [
       {
-        "title": "RocketBay - Process Launcher",
+        "title": "RocketBay",
         "width": 1200,
         "height": 800,
-        "minWidth": 800,
-        "minHeight": 600,
+        "fullscreen": false,
         "resizable": true,
-        "fullscreen": false
+        "devtools": true
       }
     ],
     "security": {
@@ -35,6 +34,9 @@
   "plugins": {
     "shell": {
       "open": true
+    },
+    "devtools": {
+      "detach": true
     }
   }
 }
