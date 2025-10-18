@@ -119,7 +119,7 @@ pub async fn create_launch_item(
         working_dir: request.working_dir,
         icon: request.icon,
         shortcut: request.shortcut,
-        group_id: request.group_id,
+        group_id: request.group_id.unwrap_or_default(),
         created_at: now.clone(),
         updated_at: now,
     };

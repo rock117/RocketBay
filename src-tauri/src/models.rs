@@ -56,7 +56,7 @@ pub struct CreateLaunchItemRequest {
     pub working_dir: Option<String>,
     pub icon: Option<String>,
     pub shortcut: Option<String>,
-    pub group_id: String,
+    pub group_id: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
