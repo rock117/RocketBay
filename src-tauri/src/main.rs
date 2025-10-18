@@ -15,6 +15,33 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_devtools::init())
+        .setup(|app| {
+            // Load configuration from file and seed storage
+            let config = match config::ConfigManager::load_config() {
+                Ok(c) => {
+                    println!("Successfully loaded config with {} groups and {} launch items", 
+                             c.groups.len(), c.launch_items.len());
+                    c
+                },
+                Err(e) => {
+                    println!("Failed to load config: {}, using defaults", e);
+                    AppConfig::default()
+                },
+            };
+
+            let storage = storage::Storage::new(app.handle().clone());
+            if let Err(e) = storage.save_groups(&config.groups) {
+                println!("Failed to save groups: {}", e);
+            }
+            if let Err(e) = storage.save_launch_items(&config.launch_items) {
+                println!("Failed to save launch items: {}", e);
+            }
+            if let Err(e) = storage.save_settings(&config.settings) {
+                println!("Failed to save settings: {}", e);
+            }
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_groups,
             create_group,

@@ -5,6 +5,23 @@ use crate::config::ConfigManager;
 use std::process::Command;
 use uuid::Uuid;
 
+fn save_current_config(app_handle: &AppHandle) -> Result<(), String> {
+    let storage = Storage::new(app_handle.clone());
+    let groups = storage.load_groups().map_err(|e| e.to_string())?;
+    let launch_items = storage.load_launch_items().map_err(|e| e.to_string())?;
+    let settings = storage.load_settings().map_err(|e| e.to_string())?;
+
+    let config = AppConfig {
+        groups,
+        launch_items,
+        settings,
+        version: "0.1.0".to_string(),
+        last_saved: chrono::Utc::now().to_rfc3339(),
+    };
+
+    ConfigManager::save_config(&config)
+}
+
 // Group commands
 #[tauri::command]
 pub async fn get_groups(app_handle: AppHandle) -> Result<Vec<Group>, String> {
@@ -107,7 +124,7 @@ pub async fn create_launch_item(
     app_handle: AppHandle,
     request: CreateLaunchItemRequest,
 ) -> Result<LaunchItem, String> {
-    let storage = Storage::new(app_handle);
+    let storage = Storage::new(app_handle.clone());
     let mut items = storage.load_launch_items().map_err(|e| e.to_string())?;
     
     let now = chrono::Utc::now().to_rfc3339();
@@ -126,6 +143,8 @@ pub async fn create_launch_item(
     
     items.push(new_item.clone());
     storage.save_launch_items(&items).map_err(|e| e.to_string())?;
+    // persist full config to file
+    let _ = save_current_config(&app_handle);
     
     Ok(new_item)
 }
@@ -135,7 +154,7 @@ pub async fn update_launch_item(
     app_handle: AppHandle,
     request: UpdateLaunchItemRequest,
 ) -> Result<LaunchItem, String> {
-    let storage = Storage::new(app_handle);
+    let storage = Storage::new(app_handle.clone());
     let mut items = storage.load_launch_items().map_err(|e| e.to_string())?;
     
     let updated_item = {
@@ -171,6 +190,8 @@ pub async fn update_launch_item(
     };
     
     storage.save_launch_items(&items).map_err(|e| e.to_string())?;
+    // persist full config to file
+    let _ = save_current_config(&app_handle);
     
     Ok(updated_item)
 }
