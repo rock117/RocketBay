@@ -199,7 +199,7 @@ pub async fn launch_process(item: LaunchItem) -> Result<(), String> {
         cmd.current_dir(working_dir);
     }
     
-    cmd.spawn().map_err(|e| format!("Failed to launch process: {}", e))?;
+    cmd.spawn().map_err(|e| format!("Failed to launch process: {}, process path: {}", e, item.path))?;
     
     Ok(())
 }

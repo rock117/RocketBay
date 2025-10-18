@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
+// Lazy import inside functions to avoid SSR issues, but keep type here for clarity
 
 export const useLaunchItemsStore = defineStore('launchItems', {
   state: () => ({
@@ -68,6 +69,17 @@ export const useLaunchItemsStore = defineStore('launchItems', {
         await invoke('launch_process', { item })
       } catch (error) {
         console.error('Failed to launch process:', error)
+        // Try to show an error dialog; ignore if dialog is not permitted by ACL
+        try {
+          const { message } = await import('@tauri-apps/plugin-dialog')
+          await message(
+            `启动失败：${String(error)}`,
+            { title: 'Launch Failed', kind: 'error' }
+          )
+        } catch (err) {
+          // noop if dialog API not available
+          console.error('Failed to show error dialog:', err)
+        }
         throw error
       }
     },
