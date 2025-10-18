@@ -8,11 +8,13 @@ mod config;
 
 use models::*;
 use commands::*;
+use tauri::Manager;
 
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_devtools::init())
         .invoke_handler(tauri::generate_handler![
             get_groups,
             create_group,
@@ -28,7 +30,8 @@ fn main() {
             save_config,
             load_config,
             get_config_path,
-            backup_config
+            backup_config,
+            open_devtools
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

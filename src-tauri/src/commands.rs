@@ -1,4 +1,4 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, State, Manager, Window, WebviewWindow};
 use crate::models::*;
 use crate::storage::*;
 use crate::config::ConfigManager;
@@ -268,4 +268,11 @@ pub async fn get_config_path() -> Result<String, String> {
 #[tauri::command]
 pub async fn backup_config() -> Result<(), String> {
     ConfigManager::backup_config()
+}
+
+// DevTools command
+#[tauri::command]
+pub async fn open_devtools(window: WebviewWindow) -> Result<(), String> {
+    window.open_devtools();
+    Ok(())
 }
