@@ -16,9 +16,11 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSettingsStore } from '~/stores/settings'
 import { invoke } from '@tauri-apps/api/core'
+import type { ContextMenu } from '~/types'
 
 const settingsStore = useSettingsStore()
 const isDark = computed(() => settingsStore.theme === 'dark')
@@ -31,7 +33,7 @@ const contextMenu = ref({
 })
 
 // Handle right-click context menu
-const handleContextMenu = (event) => {
+const handleContextMenu = (event: MouseEvent) => {
   event.preventDefault()
   contextMenu.value = {
     show: true,

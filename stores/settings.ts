@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
+import type { AppSettings } from '~/types'
+
+interface SettingsState extends AppSettings {}
 
 export const useSettingsStore = defineStore('settings', {
-  state: () => ({
+  state: (): SettingsState => ({
     theme: 'light',
     autoSave: true,
     showNotifications: true,
@@ -11,9 +14,9 @@ export const useSettingsStore = defineStore('settings', {
   }),
 
   actions: {
-    async loadSettings() {
+    async loadSettings(): Promise<void> {
       try {
-        const settings = await invoke('get_settings')
+        const settings = await invoke<AppSettings>('get_settings')
         console.log('Loaded settings:', settings)
         this.$patch(settings)
       } catch (error) {
@@ -21,9 +24,9 @@ export const useSettingsStore = defineStore('settings', {
       }
     },
 
-    async updateSettings(newSettings) {
+    async updateSettings(newSettings: Partial<AppSettings>): Promise<void> {
       try {
-        const updatedSettings = await invoke('update_settings', { 
+        const updatedSettings = await invoke<AppSettings>('update_settings', { 
           settings: { ...this.$state, ...newSettings } 
         })
         this.$patch(updatedSettings)
@@ -33,12 +36,12 @@ export const useSettingsStore = defineStore('settings', {
       }
     },
 
-    async toggleTheme() {
+    async toggleTheme(): Promise<void> {
       const newTheme = this.theme === 'light' ? 'dark' : 'light'
       await this.updateSettings({ theme: newTheme })
     },
 
-    setSettings(settings) {
+    setSettings(settings: Partial<AppSettings>): void {
       this.$patch(settings || {})
     }
   }

@@ -49,7 +49,8 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { PlusIcon, RocketLaunchIcon } from '@heroicons/vue/24/outline'
 import { useGroupsStore } from '~/stores/groups'
 import { useLaunchItemsStore } from '~/stores/launchItems'

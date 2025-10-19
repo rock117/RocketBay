@@ -1,28 +1,35 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
+import type { Group, CreateGroupRequest, UpdateGroupRequest } from '~/types'
+
+interface GroupsState {
+  groups: Group[]
+  selectedGroupId: string | null
+  loading: boolean
+}
 
 export const useGroupsStore = defineStore('groups', {
-  state: () => ({
+  state: (): GroupsState => ({
     groups: [],
     selectedGroupId: null,
     loading: false
   }),
 
   getters: {
-    sortedGroups: (state) => {
+    sortedGroups: (state): Group[] => {
       return [...state.groups].sort((a, b) => a.order - b.order)
     },
     
-    selectedGroup: (state) => {
+    selectedGroup: (state): Group | undefined => {
       return state.groups.find(g => g.id === state.selectedGroupId)
     }
   },
 
   actions: {
-    async loadGroups() {
+    async loadGroups(): Promise<void> {
       this.loading = true
       try {
-        this.groups = await invoke('get_groups')
+        this.groups = await invoke<Group[]>('get_groups')
       } catch (error) {
         console.error('Failed to load groups:', error)
         throw error
@@ -31,9 +38,9 @@ export const useGroupsStore = defineStore('groups', {
       }
     },
 
-    async createGroup(groupData) {
+    async createGroup(groupData: CreateGroupRequest): Promise<Group> {
       try {
-        const newGroup = await invoke('create_group', { request: groupData })
+        const newGroup = await invoke<Group>('create_group', { request: groupData })
         this.groups.push(newGroup)
         return newGroup
       } catch (error) {
@@ -42,9 +49,9 @@ export const useGroupsStore = defineStore('groups', {
       }
     },
 
-    async updateGroup(groupId, updates) {
+    async updateGroup(groupId: string, updates: Omit<UpdateGroupRequest, 'id'>): Promise<Group> {
       try {
-        const updatedGroup = await invoke('update_group', { 
+        const updatedGroup = await invoke<Group>('update_group', { 
           request: { id: groupId, ...updates } 
         })
         const index = this.groups.findIndex(g => g.id === groupId)
@@ -58,7 +65,7 @@ export const useGroupsStore = defineStore('groups', {
       }
     },
 
-    async deleteGroup(groupId) {
+    async deleteGroup(groupId: string): Promise<void> {
       try {
         await invoke('delete_group', { groupId })
         this.groups = this.groups.filter(g => g.id !== groupId)
@@ -71,18 +78,19 @@ export const useGroupsStore = defineStore('groups', {
       }
     },
 
-    selectGroup(groupId) {
+    selectGroup(groupId: string | null): void {
       this.selectedGroupId = groupId
     },
 
-    toggleGroupExpanded(groupId) {
+    toggleGroupExpanded(groupId: string): Promise<Group> {
       const group = this.groups.find(g => g.id === groupId)
       if (group) {
-        this.updateGroup(groupId, { expanded: !group.expanded })
+        return this.updateGroup(groupId, { expanded: !group.expanded })
       }
+      throw new Error('Group not found')
     },
 
-    setGroups(groups) {
+    setGroups(groups: Group[]): void {
       this.groups = groups || []
     }
   }

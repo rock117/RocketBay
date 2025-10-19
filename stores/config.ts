@@ -1,8 +1,17 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
+import type { AppConfig } from '~/types'
+
+interface ConfigState {
+  isLoading: boolean
+  lastSaved: string | null
+  configPath: string | null
+  autoSave: boolean
+  saveInterval: NodeJS.Timeout | null
+}
 
 export const useConfigStore = defineStore('config', {
-  state: () => ({
+  state: (): ConfigState => ({
     isLoading: false,
     lastSaved: null,
     configPath: null,
@@ -11,16 +20,16 @@ export const useConfigStore = defineStore('config', {
   }),
 
   actions: {
-    async saveConfig() {
+    async saveConfig(): Promise<string> {
       try {
         this.isLoading = true
-        const configPath = await invoke('save_config')
+        const configPath = await invoke<string>('save_config')
         this.configPath = configPath
         this.lastSaved = new Date().toISOString()
         
         // Show success notification
-        const { useUiStore } = await import('./ui.js')
-        const uiStore = useUiStore()
+        const { useUIStore } = await import('./ui')
+        const uiStore = useUIStore()
         uiStore.addNotification({
           type: 'success',
           message: `Configuration saved to: ${configPath}`
@@ -29,8 +38,8 @@ export const useConfigStore = defineStore('config', {
         return configPath
       } catch (error) {
         console.error('Failed to save config:', error)
-        const { useUiStore } = await import('./ui.js')
-        const uiStore = useUiStore()
+        const { useUIStore } = await import('./ui')
+        const uiStore = useUIStore()
         uiStore.addNotification({
           type: 'error',
           message: `Failed to save configuration: ${error}`
@@ -41,18 +50,19 @@ export const useConfigStore = defineStore('config', {
       }
     },
 
-    async loadConfig() {
+    async loadConfig(): Promise<AppConfig> {
       try {
         this.isLoading = true
-        const config = await invoke('load_config')
+        const config = await invoke<AppConfig>('load_config')
         console.log('Loaded config: ===> ', config)
+        
         // Update stores with loaded data
-        const { useGroupsStore } = await import('./groups.js')
-        const { useLaunchItemsStore } = await import('./launchItems.js')
-        const { useSettingsStore } = await import('./settings.js')
-        const { useUiStore } = await import('./ui.js')
+        const { useGroupsStore } = await import('./groups')
+        const { useLaunchItemsStore } = await import('./launchItems')
+        const { useSettingsStore } = await import('./settings')
+        const { useUIStore } = await import('./ui')
+        
         console.log('import success')
-
 
         const groupsStore = useGroupsStore()
         console.log('import useGroupsStore success')
@@ -60,7 +70,7 @@ export const useConfigStore = defineStore('config', {
         console.log('import useLaunchItemsStore success')
         const settingsStore = useSettingsStore()
         console.log('import useSettingsStore success')
-        const uiStore = useUiStore()
+        const uiStore = useUIStore()
         console.log('import useUiStore success')
         console.log('use success')
         
@@ -68,7 +78,8 @@ export const useConfigStore = defineStore('config', {
         launchItemsStore.setLaunchItems(config.launch_items)
         settingsStore.setSettings(config.settings)
         console.log('set success')
-        this.lastSaved = config.last_saved
+        
+        this.lastSaved = config.last_saved || null
         
         // Show success notification
         uiStore.addNotification({
@@ -79,8 +90,8 @@ export const useConfigStore = defineStore('config', {
         return config
       } catch (error) {
         console.error('Failed to load config:', error)
-        const { useUiStore } = await import('./ui.js')
-        const uiStore = useUiStore()
+        const { useUIStore } = await import('./ui')
+        const uiStore = useUIStore()
         uiStore.addNotification({
           type: 'error',
           message: `Failed to load configuration: ${error}`
@@ -91,10 +102,10 @@ export const useConfigStore = defineStore('config', {
       }
     },
 
-    async getConfigPath() {
+    async getConfigPath(): Promise<string> {
       try {
         console.log('invoke = ', invoke)
-        const path = await invoke('get_config_path')
+        const path = await invoke<string>('get_config_path')
         this.configPath = path
         return path
       } catch (error) {
@@ -103,20 +114,20 @@ export const useConfigStore = defineStore('config', {
       }
     },
 
-    async backupConfig() {
+    async backupConfig(): Promise<void> {
       try {
         await invoke('backup_config')
         
-        const { useUiStore } = await import('./ui.js')
-        const uiStore = useUiStore()
+        const { useUIStore } = await import('./ui')
+        const uiStore = useUIStore()
         uiStore.addNotification({
           type: 'success',
           message: 'Configuration backup created successfully'
         })
       } catch (error) {
         console.error('Failed to backup config:', error)
-        const { useUiStore } = await import('./ui.js')
-        const uiStore = useUiStore()
+        const { useUIStore } = await import('./ui')
+        const uiStore = useUIStore()
         uiStore.addNotification({
           type: 'error',
           message: `Failed to create backup: ${error}`
@@ -125,7 +136,7 @@ export const useConfigStore = defineStore('config', {
       }
     },
 
-    enableAutoSave(intervalMinutes = 5) {
+    enableAutoSave(intervalMinutes: number = 5): void {
       this.disableAutoSave() // Clear existing interval
       
       this.autoSave = true
@@ -138,7 +149,7 @@ export const useConfigStore = defineStore('config', {
       console.log(`Auto-save enabled with ${intervalMinutes} minute interval`)
     },
 
-    disableAutoSave() {
+    disableAutoSave(): void {
       if (this.saveInterval) {
         clearInterval(this.saveInterval)
         this.saveInterval = null
@@ -147,7 +158,7 @@ export const useConfigStore = defineStore('config', {
       console.log('Auto-save disabled')
     },
 
-    async initializeConfig() {
+    async initializeConfig(): Promise<void> {
       try {
         console.log('initializeConfig running...')
         console.log('getConfigPath running...')
@@ -166,4 +177,3 @@ export const useConfigStore = defineStore('config', {
     }
   }
 })
-

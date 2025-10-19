@@ -1,7 +1,20 @@
 import { defineStore } from 'pinia'
+import type { Group, LaunchItem, Notification } from '~/types'
+
+interface UIState {
+  isLoading: boolean
+  showAddGroupModal: boolean
+  showEditGroupModal: boolean
+  showAddItemModal: boolean
+  showEditItemModal: boolean
+  showConfigModal: boolean
+  editingGroup: Group | null
+  editingItem: LaunchItem | null
+  notifications: Notification[]
+}
 
 export const useUIStore = defineStore('ui', {
-  state: () => ({
+  state: (): UIState => ({
     isLoading: false,
     showAddGroupModal: false,
     showEditGroupModal: false,
@@ -14,54 +27,56 @@ export const useUIStore = defineStore('ui', {
   }),
 
   actions: {
-    setLoading(loading) {
+    setLoading(loading: boolean): void {
       this.isLoading = loading
     },
 
-    setShowAddGroupModal(show) {
+    setShowAddGroupModal(show: boolean): void {
       this.showAddGroupModal = show
       if (!show) {
         this.editingGroup = null
       }
     },
 
-    setShowEditGroupModal(show, group = null) {
+    setShowEditGroupModal(show: boolean, group: Group | null = null): void {
       this.showEditGroupModal = show
       this.editingGroup = group
     },
 
-    setShowAddItemModal(show) {
+    setShowAddItemModal(show: boolean): void {
       this.showAddItemModal = show
       if (!show) {
         this.editingItem = null
       }
     },
 
-    setShowEditItemModal(show, item = null) {
+    setShowEditItemModal(show: boolean, item: LaunchItem | null = null): void {
       this.showEditItemModal = show
       this.editingItem = item
     },
 
-    setShowConfigModal(show) {
+    setShowConfigModal(show: boolean): void {
       this.showConfigModal = show
     },
 
-    addNotification(notification) {
-      const id = Date.now()
-      this.notifications.push({
+    addNotification(notification: Omit<Notification, 'id'>): void {
+      const id = Date.now().toString()
+      const newNotification: Notification = {
         id,
         type: 'info',
         duration: 3000,
         ...notification
-      })
+      }
+      
+      this.notifications.push(newNotification)
       
       // Auto remove notification
       setTimeout(() => {
         this.removeNotification(id)
-      }, notification.duration || 3000)
+      }, newNotification.duration || 3000)
     },
 
-    removeNotification(id) {
+    removeNotification(id: string): void {
       this.notifications = this.notifications.filter(n => n.id !== id)
     }
   }

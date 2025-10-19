@@ -1,24 +1,29 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
-// Lazy import inside functions to avoid SSR issues, but keep type here for clarity
+import type { LaunchItem, CreateLaunchItemRequest, UpdateLaunchItemRequest } from '~/types'
+
+interface LaunchItemsState {
+  items: LaunchItem[]
+  loading: boolean
+}
 
 export const useLaunchItemsStore = defineStore('launchItems', {
-  state: () => ({
+  state: (): LaunchItemsState => ({
     items: [],
     loading: false
   }),
 
   getters: {
-    getItemsByGroup: (state) => (groupId) => {
+    getItemsByGroup: (state) => (groupId: string): LaunchItem[] => {
       return state.items.filter(item => item.group_id === groupId)
     }
   },
 
   actions: {
-    async loadItems() {
+    async loadItems(): Promise<void> {
       this.loading = true
       try {
-        this.items = await invoke('get_launch_items')
+        this.items = await invoke<LaunchItem[]>('get_launch_items')
         console.log('Loaded launch items:', this.items)
       } catch (error) {
         console.error('Failed to load launch items:', error)
@@ -28,9 +33,9 @@ export const useLaunchItemsStore = defineStore('launchItems', {
       }
     },
 
-    async createItem(itemData) {
+    async createItem(itemData: CreateLaunchItemRequest): Promise<LaunchItem> {
       try {
-        const newItem = await invoke('create_launch_item', { request: itemData })
+        const newItem = await invoke<LaunchItem>('create_launch_item', { request: itemData })
         this.items.push(newItem)
         return newItem
       } catch (error) {
@@ -39,9 +44,9 @@ export const useLaunchItemsStore = defineStore('launchItems', {
       }
     },
 
-    async updateItem(itemId, updates) {
+    async updateItem(itemId: string, updates: Omit<UpdateLaunchItemRequest, 'id'>): Promise<LaunchItem> {
       try {
-        const updatedItem = await invoke('update_launch_item', { 
+        const updatedItem = await invoke<LaunchItem>('update_launch_item', { 
           request: { id: itemId, ...updates } 
         })
         const index = this.items.findIndex(item => item.id === itemId)
@@ -55,7 +60,7 @@ export const useLaunchItemsStore = defineStore('launchItems', {
       }
     },
 
-    async deleteItem(itemId) {
+    async deleteItem(itemId: string): Promise<void> {
       try {
         await invoke('delete_launch_item', { itemId })
         this.items = this.items.filter(item => item.id !== itemId)
@@ -65,7 +70,7 @@ export const useLaunchItemsStore = defineStore('launchItems', {
       }
     },
 
-    async launchItem(item) {
+    async launchItem(item: LaunchItem): Promise<void> {
       try {
         await invoke('launch_process', { item })
       } catch (error) {
@@ -85,11 +90,11 @@ export const useLaunchItemsStore = defineStore('launchItems', {
       }
     },
 
-    moveItemToGroup(itemId, newGroupId) {
+    moveItemToGroup(itemId: string, newGroupId: string): Promise<LaunchItem> {
       return this.updateItem(itemId, { group_id: newGroupId })
     },
 
-    setLaunchItems(items) {
+    setLaunchItems(items: LaunchItem[]): void {
       this.items = items || []
     }
   }
