@@ -45,22 +45,29 @@ export const useConfigStore = defineStore('config', {
       try {
         this.isLoading = true
         const config = await invoke('load_config')
-        
+        console.log('Loaded config: ===> ', config)
         // Update stores with loaded data
         const { useGroupsStore } = await import('./groups.js')
         const { useLaunchItemsStore } = await import('./launchItems.js')
         const { useSettingsStore } = await import('./settings.js')
         const { useUiStore } = await import('./ui.js')
-        
+        console.log('import success')
+
+
         const groupsStore = useGroupsStore()
+        console.log('import useGroupsStore success')
         const launchItemsStore = useLaunchItemsStore()
+        console.log('import useLaunchItemsStore success')
         const settingsStore = useSettingsStore()
+        console.log('import useSettingsStore success')
         const uiStore = useUiStore()
+        console.log('import useUiStore success')
+        console.log('use success')
         
         groupsStore.setGroups(config.groups)
         launchItemsStore.setLaunchItems(config.launch_items)
-        settingsStore.updateSettings(config.settings)
-        
+        settingsStore.setSettings(config.settings)
+        console.log('set success')
         this.lastSaved = config.last_saved
         
         // Show success notification
@@ -86,6 +93,7 @@ export const useConfigStore = defineStore('config', {
 
     async getConfigPath() {
       try {
+        console.log('invoke = ', invoke)
         const path = await invoke('get_config_path')
         this.configPath = path
         return path
@@ -141,12 +149,15 @@ export const useConfigStore = defineStore('config', {
 
     async initializeConfig() {
       try {
+        console.log('initializeConfig running...')
+        console.log('getConfigPath running...')
         // Get config path
         await this.getConfigPath()
+        console.log('loadConfig running...')
         
         // Try to load existing config
         await this.loadConfig()
-        
+        console.log('enableAutoSave running...')
         // Enable auto-save by default
         this.enableAutoSave(5)
       } catch (error) {

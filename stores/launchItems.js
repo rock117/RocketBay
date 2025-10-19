@@ -19,6 +19,7 @@ export const useLaunchItemsStore = defineStore('launchItems', {
       this.loading = true
       try {
         this.items = await invoke('get_launch_items')
+        console.log('Loaded launch items:', this.items)
       } catch (error) {
         console.error('Failed to load launch items:', error)
         throw error
@@ -86,6 +87,10 @@ export const useLaunchItemsStore = defineStore('launchItems', {
 
     moveItemToGroup(itemId, newGroupId) {
       return this.updateItem(itemId, { group_id: newGroupId })
+    },
+
+    setLaunchItems(items) {
+      this.items = items || []
     }
   }
 })

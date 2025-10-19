@@ -80,6 +80,10 @@ export const useGroupsStore = defineStore('groups', {
       if (group) {
         this.updateGroup(groupId, { expanded: !group.expanded })
       }
+    },
+
+    setGroups(groups) {
+      this.groups = groups || []
     }
   }
 })
