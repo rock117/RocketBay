@@ -190,6 +190,12 @@ const handleSubmit = async () => {
         message: 'Group created successfully'
       })
     }
+
+    // Save configuration after successful create/update
+    const { useConfigStore } = await import('~/stores/config')
+    const configStore = useConfigStore()
+    await configStore.saveConfig()
+
     closeModal()
   } catch (error) {
     uiStore.addNotification({

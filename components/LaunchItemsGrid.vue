@@ -21,7 +21,7 @@
             <PencilIcon class="w-4 h-4" />
           </button>
           <button
-            @click.stop="deleteItem(item)"
+            @click.stop="confirmDelete(item)"
             class="action-btn text-red-500"
             title="Delete"
           >
@@ -104,20 +104,43 @@ const editItem = (item) => {
   uiStore.setShowEditItemModal(true, item)
 }
 
-const deleteItem = async (item) => {
-  if (confirm(`Are you sure you want to delete "${item.name}"?`)) {
-    try {
-      await launchItemsStore.deleteItem(item.id)
-      uiStore.addNotification({
-        type: 'success',
-        message: `Deleted "${item.name}"`
-      })
-    } catch (error) {
-      uiStore.addNotification({
-        type: 'error',
-        message: 'Failed to delete item'
-      })
+const confirmDelete = async (item) => {
+  try {
+    const { ask } = await import('@tauri-apps/plugin-dialog')
+    const confirmed = await ask(
+      `Are you sure you want to delete "${item.name}"?`,
+      { title: 'Confirm Delete', kind: 'warning' }
+    )
+    
+    if (confirmed) {
+      await deleteItem(item)
     }
+  } catch (error) {
+    // Fallback to browser confirm if Tauri dialog is not available
+    if (confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      await deleteItem(item)
+    }
+  }
+}
+
+const deleteItem = async (item) => {
+  try {
+    await launchItemsStore.deleteItem(item.id)
+    
+    // Save configuration after successful deletion
+    const { useConfigStore } = await import('~/stores/config')
+    const configStore = useConfigStore()
+    await configStore.saveConfig()
+    
+    uiStore.addNotification({
+      type: 'success',
+      message: `Deleted "${item.name}"`
+    })
+  } catch (error) {
+    uiStore.addNotification({
+      type: 'error',
+      message: 'Failed to delete item'
+    })
   }
 }
 

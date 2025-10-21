@@ -95,7 +95,7 @@ export const useLaunchItemsStore = defineStore('launchItems', {
     },
 
     setLaunchItems(items: LaunchItem[]): void {
-      this.items = items || []
+      this.items = items
     }
   }
 })
