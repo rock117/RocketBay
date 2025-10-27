@@ -87,24 +87,6 @@
           <p class="form-help">Optional working directory for the process</p>
         </div>
         
-        <div class="form-group">
-          <label for="item-group" class="form-label">Group</label>
-          <select
-            id="item-group"
-            v-model="formData.group_id"
-            class="form-select"
-          >
-            <option value="">Select a group (optional)</option>
-            <option
-              v-for="group in groups"
-              :key="group.id"
-              :value="group.id"
-            >
-              {{ group.name }}
-            </option>
-          </select>
-        </div>
-        
         <div class="form-actions">
           <button
             type="button"
@@ -128,11 +110,9 @@
 
 <script setup>
 import { XMarkIcon } from '@heroicons/vue/24/outline'
-import { useGroupsStore } from '~/stores/groups'
 import { useLaunchItemsStore } from '~/stores/launchItems'
 import { useUIStore } from '~/stores/ui'
 
-const groupsStore = useGroupsStore()
 const launchItemsStore = useLaunchItemsStore()
 const uiStore = useUIStore()
 
@@ -142,14 +122,11 @@ const showModal = computed(() =>
 
 const isEditing = computed(() => uiStore.showEditItemModal)
 
-const groups = computed(() => groupsStore.groups)
-
 const formData = reactive({
   name: '',
   path: '',
   args: '',
-  working_dir: '',
-  group_id: ''
+  working_dir: ''
 })
 
 const resetForm = () => {
@@ -157,7 +134,6 @@ const resetForm = () => {
   formData.path = ''
   formData.args = ''
   formData.working_dir = ''
-  formData.group_id = ''
 }
 
 // Watch for editing item changes
@@ -167,7 +143,6 @@ watch(() => uiStore.editingItem, (item) => {
     formData.path = item.path
     formData.args = Array.isArray(item.args) ? item.args.join(' ') : (item.args || '')
     formData.working_dir = item.working_dir || ''
-    formData.group_id = item.group_id || ''
   } else {
     resetForm()
   }
@@ -251,8 +226,7 @@ const handleSubmit = async () => {
       name: formData.name.trim(),
       path: formData.path.trim(),
       args: formData.args.trim().split(' ').filter(arg => arg.length > 0),
-      working_dir: formData.working_dir.trim() || null,
-      group_id: formData.group_id || null
+      working_dir: formData.working_dir.trim() || null
     }
 
     if (isEditing.value) {

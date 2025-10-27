@@ -44,7 +44,6 @@
       </div>
       
       <div class="item-footer">
-        <span class="group-badge">{{ getGroupName(item.group_id) }}</span>
         <button
           @click.stop="launchItem(item)"
           class="launch-button"
@@ -65,25 +64,15 @@ import {
   PlayIcon 
 } from '@heroicons/vue/24/outline'
 
-import { useGroupsStore } from '~/stores/groups'
 import { useLaunchItemsStore } from '~/stores/launchItems'
 import { useUIStore } from '~/stores/ui'
 
-const groupsStore = useGroupsStore()
 const launchItemsStore = useLaunchItemsStore()
 const uiStore = useUIStore()
 
 const filteredItems = computed(() => {
-  if (!groupsStore.selectedGroupId) {
-    return launchItemsStore.items
-  }
-  return launchItemsStore.items.filter(item => item.group_id === groupsStore.selectedGroupId)
+  return launchItemsStore.items
 })
-
-const getGroupName = (groupId) => {
-  const group = groupsStore.groups.find(g => g.id === groupId)
-  return group?.name || 'Unknown Group'
-}
 
 const launchItem = async (item) => {
   try {

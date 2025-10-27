@@ -4,18 +4,6 @@ export interface TauriInvokeFunction {
 }
 
 // App Models
-export interface Group {
-  id: string
-  name: string
-  description?: string
-  icon?: string
-  color?: string
-  order: number
-  expanded?: boolean
-  created_at: string
-  updated_at: string
-}
-
 export interface LaunchItem {
   id: string
   name: string
@@ -24,7 +12,6 @@ export interface LaunchItem {
   working_dir?: string
   icon?: string
   shortcut?: string
-  group_id?: string
   order: number
   created_at: string
   updated_at: string
@@ -39,31 +26,12 @@ export interface AppSettings {
 }
 
 export interface AppConfig {
-  groups: Group[]
   launch_items: LaunchItem[]
   settings: AppSettings
   last_saved?: string
 }
 
 // Request types
-export interface CreateGroupRequest {
-  name: string
-  description?: string
-  icon?: string
-  color?: string
-  order?: number
-}
-
-export interface UpdateGroupRequest {
-  id: string
-  name?: string
-  description?: string
-  icon?: string
-  color?: string
-  order?: number
-  expanded?: boolean
-}
-
 export interface CreateLaunchItemRequest {
   name: string
   path: string
@@ -71,7 +39,6 @@ export interface CreateLaunchItemRequest {
   working_dir?: string
   icon?: string
   shortcut?: string
-  group_id?: string
   order?: number
 }
 
@@ -83,7 +50,6 @@ export interface UpdateLaunchItemRequest {
   working_dir?: string
   icon?: string
   shortcut?: string
-  group_id?: string
   order?: number
 }
 

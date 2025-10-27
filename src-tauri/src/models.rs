@@ -10,18 +10,6 @@ pub struct LaunchItem {
     pub working_dir: Option<String>,
     pub icon: Option<String>,
     pub shortcut: Option<String>,
-    pub group_id: String,
-    pub created_at: String,
-    pub updated_at: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Group {
-    pub id: String,
-    pub name: String,
-    pub color: Option<String>,
-    pub icon: Option<String>,
-    pub expanded: bool,
     pub order: i32,
     pub created_at: String,
     pub updated_at: String,
@@ -56,7 +44,6 @@ pub struct CreateLaunchItemRequest {
     pub working_dir: Option<String>,
     pub icon: Option<String>,
     pub shortcut: Option<String>,
-    pub group_id: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -68,29 +55,10 @@ pub struct UpdateLaunchItemRequest {
     pub working_dir: Option<String>,
     pub icon: Option<String>,
     pub shortcut: Option<String>,
-    pub group_id: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CreateGroupRequest {
-    pub name: String,
-    pub color: Option<String>,
-    pub icon: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateGroupRequest {
-    pub id: String,
-    pub name: Option<String>,
-    pub color: Option<String>,
-    pub icon: Option<String>,
-    pub expanded: Option<bool>,
-    pub order: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppConfig {
-    pub groups: Vec<Group>,
     pub launch_items: Vec<LaunchItem>,
     pub settings: AppSettings,
     pub version: String,
@@ -100,7 +68,6 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
-            groups: vec![],
             launch_items: vec![],
             settings: AppSettings::default(),
             version: "0.1.0".to_string(),

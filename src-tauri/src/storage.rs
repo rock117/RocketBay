@@ -27,27 +27,6 @@ impl Storage {
         Ok(app_data_dir)
     }
 
-    pub fn load_groups(&self) -> Result<Vec<Group>, Box<dyn std::error::Error>> {
-        let data_dir = self.get_data_dir()?;
-        let groups_file = data_dir.join("groups.json");
-        
-        if !groups_file.exists() {
-            return Ok(vec![]);
-        }
-        
-        let content = fs::read_to_string(groups_file)?;
-        let groups: Vec<Group> = serde_json::from_str(&content)?;
-        Ok(groups)
-    }
-
-    pub fn save_groups(&self, groups: &[Group]) -> Result<(), Box<dyn std::error::Error>> {
-        let data_dir = self.get_data_dir()?;
-        let groups_file = data_dir.join("groups.json");
-        
-        let content = serde_json::to_string_pretty(groups)?;
-        fs::write(groups_file, content)?;
-        Ok(())
-    }
 
     pub fn load_launch_items(&self) -> Result<Vec<LaunchItem>, Box<dyn std::error::Error>> {
         let data_dir = self.get_data_dir()?;

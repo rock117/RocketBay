@@ -5,13 +5,10 @@
     
     <!-- Main Content -->
     <div class="main-container">
-      <!-- Left Sidebar - Groups -->
-      <GroupsSidebar />
-      
       <!-- Main Content Area -->
       <main class="main-content">
         <div class="content-header">
-          <h2 class="content-title">{{ selectedGroupName || 'All Launch Items' }}</h2>
+          <h2 class="content-title">Launch Items</h2>
           <button 
             @click="showAddItemModal = true" 
             class="btn btn-primary"
@@ -40,7 +37,6 @@
     </div>
 
     <!-- Modals -->
-    <GroupModal />
     <LaunchItemModal />
     <ConfigModal />
     
@@ -52,28 +48,18 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { PlusIcon, RocketLaunchIcon } from '@heroicons/vue/24/outline'
-import { useGroupsStore } from '~/stores/groups'
 import { useLaunchItemsStore } from '~/stores/launchItems'
 import { useUIStore } from '~/stores/ui'
 import { useConfigStore } from '~/stores/config'
 
-const groupsStore = useGroupsStore()
 const launchItemsStore = useLaunchItemsStore()
 const uiStore = useUIStore()
 const configStore = useConfigStore()
 
 const isLoading = computed(() => uiStore.isLoading)
-const selectedGroupName = computed(() => {
-  if (!groupsStore.selectedGroupId) return null
-  const group = groupsStore.groups.find(g => g.id === groupsStore.selectedGroupId)
-  return group?.name
-})
 
 const filteredItems = computed(() => {
-  if (!groupsStore.selectedGroupId) {
-    return launchItemsStore.items
-  }
-  return launchItemsStore.items.filter(item => item.group_id === groupsStore.selectedGroupId)
+  return launchItemsStore.items
 })
 
 const showAddItemModal = computed({
@@ -90,10 +76,7 @@ onMounted(async () => {
       await configStore.initializeConfig()
     } catch (error) {
       console.warn('Config initialization failed, loading individual stores:', error)
-      await Promise.all([
-        groupsStore.loadGroups(),
-        launchItemsStore.loadItems()
-      ])
+      await launchItemsStore.loadItems()
     }
   } finally {
     uiStore.setLoading(false)

@@ -1,22 +1,25 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
-import type { AppConfig } from '~/types'
-
-interface ConfigState {
-  isLoading: boolean
-  lastSaved: string | null
-  configPath: string | null
-  autoSave: boolean
-  saveInterval: NodeJS.Timeout | null
-}
+import type { AppConfig, AppSettings } from '~/types'
 
 export const useConfigStore = defineStore('config', {
-  state: (): ConfigState => ({
+  state: () => ({
+    config: {
+      launch_items: [],
+      settings: {
+        theme: 'light' as 'light' | 'dark',
+        autoSave: true,
+        showNotifications: true,
+        windowWidth: 1200,
+        windowHeight: 800
+      }
+    } as AppConfig,
+    isLoaded: false,
     isLoading: false,
-    lastSaved: null,
-    configPath: null,
-    autoSave: true,
-    saveInterval: null
+    configPath: '',
+    lastSaved: null as string | null,
+    autoSave: false,
+    saveInterval: null as number | null
   }),
 
   actions: {
@@ -57,15 +60,12 @@ export const useConfigStore = defineStore('config', {
         console.log('Loaded config: ===> ', config)
         
         // Update stores with loaded data
-        const { useGroupsStore } = await import('./groups')
         const { useLaunchItemsStore } = await import('./launchItems')
         const { useSettingsStore } = await import('./settings')
         const { useUIStore } = await import('./ui')
         
         console.log('import success')
 
-        const groupsStore = useGroupsStore()
-        console.log('import useGroupsStore success')
         const launchItemsStore = useLaunchItemsStore()
         console.log('import useLaunchItemsStore success')
         const settingsStore = useSettingsStore()
@@ -74,7 +74,6 @@ export const useConfigStore = defineStore('config', {
         console.log('import useUiStore success')
         console.log('use success')
         
-        groupsStore.setGroups(config.groups)
         launchItemsStore.setLaunchItems(config.launch_items)
         settingsStore.setSettings(config.settings)
         console.log('set success')

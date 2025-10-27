@@ -19,8 +19,8 @@ fn main() {
             // Load configuration from file and seed storage
             let config = match config::ConfigManager::load_config() {
                 Ok(c) => {
-                    println!("Successfully loaded config with {} groups and {} launch items", 
-                             c.groups.len(), c.launch_items.len());
+                    println!("Successfully loaded config with {} launch items", 
+                             c.launch_items.len());
                     c
                 },
                 Err(e) => {
@@ -30,9 +30,6 @@ fn main() {
             };
 
             let storage = storage::Storage::new(app.handle().clone());
-            if let Err(e) = storage.save_groups(&config.groups) {
-                println!("Failed to save groups: {}", e);
-            }
             if let Err(e) = storage.save_launch_items(&config.launch_items) {
                 println!("Failed to save launch items: {}", e);
             }
@@ -43,10 +40,6 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            get_groups,
-            create_group,
-            update_group,
-            delete_group,
             get_launch_items,
             create_launch_item,
             update_launch_item,
