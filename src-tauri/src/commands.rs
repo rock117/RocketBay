@@ -4,6 +4,7 @@ use crate::storage::*;
 use crate::config::ConfigManager;
 use std::process::Command;
 use uuid::Uuid;
+use std::path::Path;
 
 fn save_current_config(app_handle: &AppHandle) -> Result<(), String> {
     let storage = Storage::new(app_handle.clone());
@@ -192,6 +193,30 @@ pub async fn get_config_path() -> Result<String, String> {
 #[tauri::command]
 pub async fn backup_config() -> Result<(), String> {
     ConfigManager::backup_config()
+}
+
+// Icon extraction command
+#[tauri::command]
+pub async fn extract_icon(file_path: String) -> Result<Option<String>, String> {
+    if !Path::new(&file_path).exists() {
+        return Ok(None);
+    }
+
+    // For Windows, we can try to extract icon using system APIs
+    // For now, we'll return None and let the frontend handle default icons
+    // This can be enhanced later with platform-specific icon extraction
+    
+    #[cfg(target_os = "windows")]
+    {
+        // TODO: Implement Windows icon extraction using Win32 APIs
+        // This would require additional dependencies like winapi or windows-rs
+        Ok(None)
+    }
+    
+    #[cfg(not(target_os = "windows"))]
+    {
+        Ok(None)
+    }
 }
 
 // DevTools command

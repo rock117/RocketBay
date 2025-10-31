@@ -5,35 +5,24 @@
     
     <!-- Main Content -->
     <div class="main-container">
-      <!-- Main Content Area -->
-      <main class="main-content">
-        <div class="content-header">
-          <h2 class="content-title">Launch Items</h2>
-          <button 
-            @click="showAddItemModal = true" 
-            class="btn btn-primary"
-          >
-            <PlusIcon class="w-4 h-4" />
-            Add Launch Item
-          </button>
-        </div>
-        
-        <LaunchItemsGrid />
-        
-        <!-- Empty State -->
-        <div v-if="filteredItems.length === 0" class="empty-state">
-          <RocketLaunchIcon class="w-16 h-16 text-gray-400" />
-          <h3>No Launch Items</h3>
-          <p>Create your first launch item to get started</p>
-          <button 
-            @click="showAddItemModal = true" 
-            class="btn btn-primary"
-          >
-            <PlusIcon class="w-4 h-4" />
-            Add Launch Item
-          </button>
-        </div>
-      </main>
+      <!-- Left Sidebar - Launch Items List -->
+      <LaunchItemsSidebar
+        :items="filteredItems"
+        :selected-item-id="selectedItem?.id"
+        @add-item="handleAddItem"
+        @select-item="handleSelectItem"
+        @launch-item="handleLaunchItem"
+        @edit-item="handleEditItem"
+        @delete-item="handleDeleteItem"
+      />
+      
+      <!-- Right Panel - Item Details -->
+      <LaunchItemDetail
+        :selected-item="selectedItem"
+        @launch-item="handleLaunchItem"
+        @edit-item="handleEditItem"
+        @delete-item="handleDeleteItem"
+      />
     </div>
 
     <!-- Modals -->
@@ -46,15 +35,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { PlusIcon, RocketLaunchIcon } from '@heroicons/vue/24/outline'
 import { useLaunchItemsStore } from '~/stores/launchItems'
 import { useUIStore } from '~/stores/ui'
 import { useConfigStore } from '~/stores/config'
+import type { LaunchItem } from '~/types'
 
 const launchItemsStore = useLaunchItemsStore()
 const uiStore = useUIStore()
 const configStore = useConfigStore()
+
+const selectedItem = ref<LaunchItem | null>(null)
+
+// Watch for changes in launch items and update selected item if it was modified
+watch(() => launchItemsStore.items, (newItems) => {
+  if (selectedItem.value) {
+    const updatedItem = newItems.find(item => item.id === selectedItem.value?.id)
+    if (updatedItem) {
+      selectedItem.value = updatedItem
+    }
+  }
+}, { deep: true })
 
 const isLoading = computed(() => uiStore.isLoading)
 
@@ -66,6 +68,102 @@ const showAddItemModal = computed({
   get: () => uiStore.showAddItemModal,
   set: (value) => uiStore.setShowAddItemModal(value)
 })
+
+// Event handlers
+const handleAddItem = () => {
+  uiStore.setShowAddItemModal(true)
+}
+
+const handleSelectItem = (item: LaunchItem) => {
+  selectedItem.value = item
+}
+
+const handleLaunchItem = async (item: LaunchItem) => {
+  try {
+    await launchItemsStore.launchItem(item)
+    uiStore.addNotification({
+      type: 'success',
+      message: `Launched "${item.name}"`
+    })
+  } catch (error) {
+    uiStore.addNotification({
+      type: 'error',
+      message: `Failed to launch "${item.name}"`
+    })
+  }
+}
+
+const handleEditItem = (item: LaunchItem) => {
+  uiStore.setShowEditItemModal(true, item)
+}
+
+const handleDeleteItem = async (item: LaunchItem) => {
+  try {
+    // Use Tauri dialog for confirmation
+    const { ask } = await import('@tauri-apps/plugin-dialog')
+    const confirmed = await ask(
+      `Are you sure you want to delete "${item.name}"?`,
+      { 
+        title: 'Confirm Deletion',
+        kind: 'warning'
+      }
+    )
+    
+    if (confirmed) {
+      try {
+        await launchItemsStore.deleteItem(item.id)
+        
+        // Clear selection if deleted item was selected
+        if (selectedItem.value?.id === item.id) {
+          selectedItem.value = null
+        }
+        
+        // Save configuration after successful deletion
+        const { useConfigStore } = await import('~/stores/config')
+        const configStore = useConfigStore()
+        await configStore.saveConfig()
+        
+        uiStore.addNotification({
+          type: 'success',
+          message: `Deleted "${item.name}"`
+        })
+      } catch (error) {
+        uiStore.addNotification({
+          type: 'error',
+          message: `Failed to delete "${item.name}"`
+        })
+      }
+    }
+  } catch (dialogError) {
+    // Fallback to browser confirm if Tauri dialog is not available
+    console.warn('Tauri dialog not available, using browser confirm:', dialogError)
+    if (confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      try {
+        await launchItemsStore.deleteItem(item.id)
+        
+        // Clear selection if deleted item was selected
+        if (selectedItem.value?.id === item.id) {
+          selectedItem.value = null
+        }
+        
+        // Save configuration after successful deletion
+        const { useConfigStore } = await import('~/stores/config')
+        const configStore = useConfigStore()
+        await configStore.saveConfig()
+        
+        uiStore.addNotification({
+          type: 'success',
+          message: `Deleted "${item.name}"`
+        })
+      } catch (error) {
+        uiStore.addNotification({
+          type: 'error',
+          message: `Failed to delete "${item.name}"`
+        })
+      }
+    }
+  }
+}
 
 // Initialize data on page load
 onMounted(async () => {
@@ -90,38 +188,6 @@ onMounted(async () => {
 }
 
 .main-container {
-  @apply flex-1 flex overflow-hidden;
-}
-
-.main-content {
-  @apply flex-1 flex flex-col p-6 overflow-auto;
-}
-
-.content-header {
-  @apply flex items-center justify-between mb-6;
-}
-
-.content-title {
-  @apply text-2xl font-bold text-gray-900 dark:text-white;
-}
-
-.btn {
-  @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors;
-}
-
-.btn-primary {
-  @apply bg-blue-600 hover:bg-blue-700 text-white;
-}
-
-.empty-state {
-  @apply flex flex-col items-center justify-center flex-1 text-center;
-}
-
-.empty-state h3 {
-  @apply text-xl font-semibold text-gray-900 dark:text-white mt-4;
-}
-
-.empty-state p {
-  @apply text-gray-600 dark:text-gray-400 mb-6;
+  @apply flex-1 flex h-full overflow-hidden;
 }
 </style>

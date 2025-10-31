@@ -51,6 +51,7 @@ fn main() {
             load_config,
             get_config_path,
             backup_config,
+            extract_icon,
             open_devtools
         ])
         .run(tauri::generate_context!())

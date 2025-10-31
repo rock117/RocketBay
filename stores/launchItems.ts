@@ -51,7 +51,8 @@ export const useLaunchItemsStore = defineStore('launchItems', {
         })
         const index = this.items.findIndex(item => item.id === itemId)
         if (index !== -1) {
-          this.items[index] = updatedItem
+          // Use splice to ensure Vue reactivity
+          this.items.splice(index, 1, updatedItem)
         }
         return updatedItem
       } catch (error) {
